@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Vue Map</title>
+    <link rel="stylesheet" href="./css/style.css"/>
+</head>
+<body>
+<div id="app">
+    <button class="btn-order btn-open" @click="openMap" v-if="!isOpen">Открыть карту</button>
+    <div id="map-modal" v-else>
+        <section class="section-map">
+            <yandex-map :coords="coords" zoom="10">
+                <ymap-marker
+                        v-for="placemark in filteredItems"
+                        :key="placemark.id"
+                        :coords="placemark.coords"
+                        marker-id="placemark.markerId"
+                        marker-type="placemark"
+                        :balloon="{ body: placemark.title }"
+                />
+            </yandex-map>
+        </section>
+        <section class="section-list">
+            <div class="close" @click="closeMap">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18.9929 3.02143C19.5491 2.4652 19.5491 1.56337 18.9929 1.00714C18.4366 0.450913 17.5348 0.450913 16.9786 1.00714L10 7.98571L3.02143 1.00714C2.4652 0.450912 1.56337 0.450913 1.00714 1.00714C0.450913 1.56337 0.450913 2.4652 1.00714 3.02143L7.98571 10L1.00714 16.9786C0.450912 17.5348 0.450913 18.4366 1.00714 18.9929C1.56337 19.5491 2.4652 19.5491 3.02143 18.9929L10 12.0143L16.9786 18.9929C17.5348 19.5491 18.4366 19.5491 18.9929 18.9929C19.5491 18.4366 19.5491 17.5348 18.9929 16.9786L12.0143 10L18.9929 3.02143Z"
+                          fill="#7E8182"/>
+                </svg>
+            </div>
+            <div class="section-header">
+                <h4 class="section-title">Пункты выдачи</h4>
+                <div class="input-control">
+                    <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                            focusable="false"
+                            data-prefix="fas"
+                            data-icon="magnifying-glass"
+                            class="svg-inline--fa fa-magnifying-glass"
+                            role="img"
+                            viewBox="0 0 512 512"
+                    >
+                        <path
+                                fill="currentColor"
+                                d="M500.3 443.7l-119.7-119.7c27.22-40.41 40.65-90.9 33.46-144.7C401.8 87.79 326.8 13.32 235.2 1.723C99.01-15.51-15.51 99.01 1.724 235.2c11.6 91.64 86.08 166.7 177.6 178.9c53.8 7.189 104.3-6.236 144.7-33.46l119.7 119.7c15.62 15.62 40.95 15.62 56.57 0C515.9 484.7 515.9 459.3 500.3 443.7zM79.1 208c0-70.58 57.42-128 128-128s128 57.42 128 128c0 70.58-57.42 128-128 128S79.1 278.6 79.1 208z"
+                        />
+                    </svg>
+                    <input type="text" placeholder="Поиск" v-model="search"/>
+                </div>
+                <div class="filter">
+                    <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                            focusable="false"
+                            data-prefix="fas"
+                            data-icon="sliders"
+                            class="svg-inline--fa fa-sliders"
+                            role="img"
+                            viewBox="0 0 512 512"
+                    >
+                        <path
+                                fill="currentColor"
+                                d="M480 384H249.2C236.9 355.8 208.8 336 176 336S115.1 355.8 102.8 384H32c-17.67 0-32 14.33-32 32s14.33 32 32 32h70.75C115.1 476.2 143.2 496 176 496s60.89-19.77 73.25-48H480c17.67 0 32-14.33 32-32S497.7 384 480 384zM176 448c-17.64 0-32-14.36-32-32s14.36-32 32-32s32 14.36 32 32S193.6 448 176 448zM480 224h-70.75C396.9 195.8 368.8 176 336 176S275.1 195.8 262.8 224H32C14.33 224 0 238.3 0 256s14.33 32 32 32h230.8C275.1 316.2 303.2 336 336 336s60.89-19.77 73.25-48H480c17.67 0 32-14.33 32-32S497.7 224 480 224zM336 288c-17.64 0-32-14.36-32-32s14.36-32 32-32s32 14.36 32 32S353.6 288 336 288zM32 128h102.8C147.1 156.2 175.2 176 208 176s60.89-19.77 73.25-48H480c17.67 0 32-14.33 32-32s-14.33-32-32-32h-198.8C268.9 35.77 240.8 16 208 16S147.1 35.77 134.8 64H32C14.33 64 0 78.33 0 96S14.33 128 32 128zM208 64c17.64 0 32 14.36 32 32s-14.36 32-32 32s-32-14.36-32-32S190.4 64 208 64z"
+                        />
+                    </svg>
+                    Примерка, возврат и другие услуги
+                </div>
+            </div>
+            <ul class="pick-up-point-list">
+                <li
+                        class="pick-up-point-item"
+                        v-for="item in filteredItems"
+                        @click="selectSingleMarket(item.id)"
+                >
+                    <div class="stock-wrapper">
+                        <div class="stock-type">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 2C8.1 2 5 5.1 5 9C5 15 12 22 12 22C12 22 19 14.9 19 9C19 5.1 15.9 2 12 2ZM12 11.5C10.6 11.5 9.5 10.4 9.5 9C9.5 7.6 10.6 6.5 12 6.5C13.4 6.5 14.5 7.6 14.5 9C14.5 10.4 13.4 11.5 12 11.5Z"
+                                      fill="#17999F"/>
+                            </svg>
+                            {{item.type}}
+                        </div>
+                        <div class="stock-location">
+                            {{fullTitle(item)}}
+                        </div>
+                        <div class="stock-date">
+                            Все товары 15 ноября
+                        </div>
+                    </div>
+                    <svg width="12" height="18" viewBox="0 0 12 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M2.79617 1.99997L9.24734 8.45113C9.63786 8.84165 9.63786 9.47482 9.24734 9.86534L3.15827 15.9544"
+                              stroke="#17999F" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                </li>
+            </ul>
+            <div
+                    :class="{'is-active': selected}"
+                    class="section-single-item"
+            >
+                <div v-if="selected">
+                    <div class="modal-header">
+                        <a href="#" @click.prevent="selectSingleMarket()">
+                            <svg width="21" height="17" viewBox="0 0 21 17" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                      d="M7.6979 15.9447C7.79538 15.9845 7.89975 16.0047 8.00504 16.0041C8.11033 16.0047 8.21471 15.9845 8.31218 15.9447C8.40966 15.9049 8.49831 15.8462 8.57307 15.7721C8.64806 15.6977 8.70757 15.6092 8.74819 15.5117C8.78881 15.4142 8.80972 15.3097 8.80972 15.204C8.80972 15.0984 8.78881 14.9939 8.74819 14.8964C8.70757 14.7989 8.64806 14.7104 8.57307 14.636L2.73374 8.80371H20.0059C20.2181 8.80371 20.4216 8.71942 20.5716 8.56939C20.7216 8.41935 20.8059 8.21586 20.8059 8.00367C20.8059 7.79149 20.7216 7.588 20.5716 7.43796C20.4216 7.28792 20.2181 7.20363 20.0059 7.20363H2.73374L8.57307 1.37134C8.64766 1.29675 8.70684 1.20819 8.74721 1.11073C8.78758 1.01327 8.80835 0.908806 8.80835 0.803314C8.80835 0.697821 8.78758 0.593361 8.74721 0.495899C8.70684 0.398436 8.64766 0.30988 8.57307 0.235285C8.49848 0.160691 8.40992 0.101519 8.31246 0.0611489C8.21499 0.0207786 8.11053 0 8.00504 0C7.89955 0 7.79509 0.0207786 7.69763 0.0611489C7.60016 0.101519 7.51161 0.160691 7.43701 0.235285L0.236651 7.43565C0.161664 7.51002 0.102146 7.59851 0.0615286 7.696C0.0209116 7.79349 0 7.89806 0 8.00368C0 8.10929 0.0209116 8.21386 0.0615286 8.31135C0.102146 8.40884 0.161664 8.49733 0.236651 8.5717L7.43701 15.7721C7.51177 15.8462 7.60043 15.9049 7.6979 15.9447Z"
+                                      fill="#17999F"/>
+                            </svg>
+                            К списку пунктов выдачи
+                        </a>
+                    </div>
+                    <div class="modal-body">
+                        <div class="section-about">
+                            <div class="about-price">
+                                <span>15 ноября, Пн</span>
+                                <span>Бесплатно</span>
+                                <span class="text-pink">Все товары</span>
+                            </div>
+                        </div>
+                        <div class="section-order">
+                            <p><span class="text-pink">Все товары</span>, 15 ноября, понедельник с 9:00 до 18:00</p>
+                            <button class="btn-order">Забрать здесь</button>
+                        </div>
+                        <div class="divider"></div>
+                    </div>
+                    <div class="pick-up-point-item border-none">
+                        <div class="stock-wrapper">
+                            <div class="stock-type">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                     xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 2C8.1 2 5 5.1 5 9C5 15 12 22 12 22C12 22 19 14.9 19 9C19 5.1 15.9 2 12 2ZM12 11.5C10.6 11.5 9.5 10.4 9.5 9C9.5 7.6 10.6 6.5 12 6.5C13.4 6.5 14.5 7.6 14.5 9C14.5 10.4 13.4 11.5 12 11.5Z"
+                                          fill="#17999F"/>
+                                </svg>
+                                {{selected.type}}
+                            </div>
+                            <div class="stock-location">
+                                {{fullTitle(selected)}}
+                            </div>
+                            <div class="stock-date">
+                                Все товары 15 ноября
+                            </div>
+                        </div>
+                        <svg width="12" height="18" viewBox="0 0 12 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.79617 1.99997L9.24734 8.45113C9.63786 8.84165 9.63786 9.47482 9.24734 9.86534L3.15827 15.9544"
+                                  stroke="#17999F" stroke-width="4" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="order-variations">
+                        <div v-for="variation in selected.variations" class="order-variation-item">
+                          <span v-if="variation.value" class="order-icon">
+                            <svg width="12" height="10" viewBox="0 0 12 10" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                              <path d="M1 4L5 9L10.5 1" stroke="#DF5A9B" stroke-width="1.8" stroke-linecap="round"
+                                    stroke-linejoin="round"/>
+                            </svg>
+                          </span>
+                            <span v-else class="order-icon">
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                              <path d="M9.49643 1.51071C9.77454 1.2326 9.77454 0.781686 9.49643 0.503571C9.21831 0.225457 8.7674 0.225457 8.48929 0.503572L5 3.99286L1.51071 0.503571C1.2326 0.225456 0.781686 0.225457 0.503571 0.503571C0.225457 0.781686 0.225457 1.2326 0.503572 1.51071L3.99286 5L0.503571 8.48929C0.225456 8.7674 0.225457 9.21831 0.503571 9.49643C0.781686 9.77454 1.2326 9.77454 1.51071 9.49643L5 6.00714L8.48929 9.49643C8.7674 9.77454 9.21831 9.77454 9.49643 9.49643C9.77454 9.21831 9.77454 8.7674 9.49643 8.48929L6.00714 5L9.49643 1.51071Z"
+                                    fill="#7E8182"/>
+                            </svg>
+                          </span>
+                            {{stocks[1].name}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src=" https://unpkg.com/vue-yandex-maps"></script>
+<script>
+    let app = new Vue({
+        el: "#app",
+        data: {
+            isOpen: false,
+            search: "",
+            selected: null,
+            coords: [40.199782, 44.561203],
+            stocks: [
+                {
+                    id: 1,
+                    type: 'Постамат',
+                    coords: [40.15618088966811, 44.581365589216794],
+                    name: 'Постамат PickPoint 1',
+                    city: 'Андреевка',
+                    address: 'Жилинская ул., с1',
+                    fee: '',
+                    workingHours: {
+                        start: '9:00',
+                        end: '18:00',
+                    },
+                    variations: {
+                        card_payment: {
+                            title: 'Оплата картой',
+                            value: true
+                        },
+                        fitting: {
+                            title: 'Примерка одежды',
+                            value: true
+                        },
+                        return: {
+                            title: 'Возврат товара',
+                            value: true
+                        },
+                        partial_order_redemption: {
+                            title: 'Частичный выкуп заказа',
+                            value: true
+                        }
+                    }
+                },
+                {
+                    id: 2,
+                    type: 'Постамат',
+                    coords: [40.199782, 44.561203],
+                    name: 'Постамат PickPoint 2',
+                    city: 'Андреевка 2',
+                    address: 'Жилинская ул., с2',
+                    fee: '',
+                    workingHours: {
+                        start: '10:00',
+                        end: '19:00',
+                    },
+                    variations: {
+                        card_payment: {
+                            title: 'Оплата картой',
+                            value: false
+                        },
+                        fitting: {
+                            title: 'Примерка одежды',
+                            value: true
+                        },
+                        return: {
+                            title: 'Возврат товара',
+                            value: false
+                        },
+                        partial_order_redemption: {
+                            title: 'Частичный выкуп заказа',
+                            value: true
+                        }
+                    }
+                },
+                {
+                    id: 3,
+                    type: 'Постамат',
+                    coords: [40.0957276821544, 44.410378054690206],
+                    name: 'Постамат PickPoint 3',
+                    city: 'Андреевка 3',
+                    address: 'Жилинская ул., с3',
+                    fee: '',
+                    workingHours: {
+                        start: '10:00',
+                        end: '19:00',
+                    },
+                    variations: {
+                        card_payment: {
+                            title: 'Оплата картой',
+                            value: true
+                        },
+                        fitting: {
+                            title: 'Примерка одежды',
+                            value: true
+                        },
+                        return: {
+                            title: 'Возврат товара',
+                            value: true
+                        },
+                        partial_order_redemption: {
+                            title: 'Частичный выкуп заказа',
+                            value: false
+                        }
+                    }
+                },
+                {
+                    id: 4,
+                    type: 'Постамат',
+                    coords: [40.15618088966811, 44.581365589216794],
+                    name: 'Gagulik',
+                    city: 'Yerevan',
+                    address: 'Qanaqer',
+                    fee: '',
+                    workingHours: {
+                        start: '9:00',
+                        end: '18:00',
+                    },
+                    variations: {
+                        card_payment: {
+                            title: 'Оплата картой',
+                            value: true
+                        },
+                        fitting: {
+                            title: 'Примерка одежды',
+                            value: true
+                        },
+                        return: {
+                            title: 'Возврат товара',
+                            value: true
+                        },
+                        partial_order_redemption: {
+                            title: 'Частичный выкуп заказа',
+                            value: true
+                        }
+                    }
+                },
+                {
+                    id: 5,
+                    type: 'Постамат',
+                    coords: [40.15618088966811, 44.581365589216794],
+                    name: 'Saqulik',
+                    city: 'Yerevan',
+                    address: 'komitas 18',
+                    fee: '',
+                    workingHours: {
+                        start: '9:00',
+                        end: '18:00',
+                    },
+                    variations: {
+                        card_payment: {
+                            title: 'Оплата картой',
+                            value: true
+                        },
+                        fitting: {
+                            title: 'Примерка одежды',
+                            value: true
+                        },
+                        return: {
+                            title: 'Возврат товара',
+                            value: true
+                        },
+                        partial_order_redemption: {
+                            title: 'Частичный выкуп заказа',
+                            value: true
+                        }
+                    }
+                },
+            ]
+        },
+        methods: {
+            selectSingleMarket(id = null) {
+                this.selected = id
+                    ? this.stocks.find((el) => el.id === id)
+                    : null;
+            },
+            openMap() {
+                this.isOpen = true
+            },
+            closeMap() {
+                this.isOpen = false
+            },
+            fullTitle(item) {
+                return `${item.name}, ${item.city}, ${item.address}`;
+            },
+        },
+        computed: {
+            filteredItems() {
+                if (this.search) {
+                    return this.stocks.filter((el) =>
+                        el.name.toLowerCase().includes(this.search.toLowerCase()) ||
+                        el.city.toLowerCase().includes(this.search.toLowerCase()) ||
+                        el.address.toLowerCase().includes(this.search.toLowerCase())
+                    );
+                }
+                return this.stocks;
+            },
+        },
+    });
+</script>
+</body>
+</html>
