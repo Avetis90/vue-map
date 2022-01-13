@@ -15,14 +15,15 @@
     <button class="btn-order btn-open" @click="openMap" v-if="!isOpen">Открыть карту</button>
     <div id="map-modal" v-else>
         <section class="section-map">
-            <yandex-map :coords="coords" zoom="10">
+            <yandex-map :coords="selected ? selected.coords : coords" :zoom="10"
+                        :center="selected ? selected.coords : coords">
                 <ymap-marker
                         v-for="placemark in filteredItems"
                         :key="placemark.id"
                         :coords="placemark.coords"
-                        marker-id="placemark.markerId"
+                        marker-id="placemark.id"
                         marker-type="placemark"
-                        :balloon="{ body: placemark.title }"
+                        :balloon="{ body: placemark.name }"
                 />
             </yandex-map>
         </section>
@@ -125,7 +126,8 @@
                             </div>
                         </div>
                         <div class="section-order">
-                            <p><span class="text-pink">Все товары</span>, {{showDateAndWeekDay()}} с {{selected.workingHours.start}} до {{selected.workingHours.end}}</p>
+                            <p><span class="text-pink">Все товары</span>, {{showDateAndWeekDay()}} с
+                                {{selected.workingHours.start}} до {{selected.workingHours.end}}</p>
                             <button class="btn-order">Забрать здесь</button>
                         </div>
                         <div class="divider"></div>
@@ -146,7 +148,9 @@
                             <div class="stock-working-days">
                                 Ежедневно с {{selected.workingHours.start}} до {{selected.workingHours.end}}
                             </div>
-                            <a class="stock-working-days text-green" :href="'https://yandex.ru/maps/?pt='+selected.coords.toString()+'&z=10&l=map'" target="_blank">Открыть на Яндекс Картах</a>
+                            <a class="stock-working-days text-green"
+                               :href="'https://yandex.ru/maps/?pt='+selected.coords.toString()+'&z=10&l=map'"
+                               target="_blank">Открыть на Яндекс Картах</a>
                         </div>
                         <svg width="12" height="18" viewBox="0 0 12 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M2.79617 1.99997L9.24734 8.45113C9.63786 8.84165 9.63786 9.47482 9.24734 9.86534L3.15827 15.9544"
@@ -182,194 +186,226 @@
 <script src=" https://unpkg.com/vue-yandex-maps"></script>
 <script>
 
-   const months = [
-       'январь',
-       'февраль',
-       'март',
-       'апрель',
-       'май',
-       'июнь',
-       'июль',
-       'август',
-       'сентябрь',
-       'октябрь',
-       'ноябрь',
-       'декабрь',
-   ];
-   const week = [
-       {long:'понедельник',short:'пн'},
-       {long:'вторник',short:'вт'},
-       {long:'реда',short:'ср'},
-       {long:'четверг',short:'чт'},
-       {long:'пятница',short:'пт'},
-       {long:'суббота',short:'сб'},
-       {long:'воскресенье',short:'вс'},
-   ];
+    const months = [
+        'январь',
+        'февраль',
+        'март',
+        'апрель',
+        'май',
+        'июнь',
+        'июль',
+        'август',
+        'сентябрь',
+        'октябрь',
+        'ноябрь',
+        'декабрь',
+    ];
+    const week = [
+        {long: 'понедельник', short: 'пн'},
+        {long: 'вторник', short: 'вт'},
+        {long: 'реда', short: 'ср'},
+        {long: 'четверг', short: 'чт'},
+        {long: 'пятница', short: 'пт'},
+        {long: 'суббота', short: 'сб'},
+        {long: 'воскресенье', short: 'вс'},
+    ];
 
     let app = new Vue({
         el: "#app",
-        data: {
-            isOpen: false,
-            search: "",
-            selected: null,
-            coords: [40.199782, 44.561203],
-            stocks: [
-                {
-                    id: 1,
-                    type: 'Постамат',
-                    coords: [40.15618088966811,44.581365589216794],
-                    name: 'Постамат PickPoint 1',
-                    city: 'Андреевка',
-                    address: 'Жилинская ул., с1',
-                    fee: '',
-                    workingHours: {
-                        start: '9:00',
-                        end: '18:00',
+        data() {
+            return {
+                isOpen: false,
+                search: "",
+                selected: null,
+                coords: [40.199782, 44.561203],
+                stocks: [
+                    {
+                        id: 1,
+                        type: 'Постамат',
+                        coords: [40.15618088966811, 44.581365589216794],
+                        name: 'Постамат PickPoint 1',
+                        city: 'Андреевка',
+                        address: 'Жилинская ул., с1',
+                        fee: '',
+                        workingHours: {
+                            start: '9:00',
+                            end: '18:00',
+                        },
+                        variations: {
+                            card_payment: {
+                                title: 'Оплата картой',
+                                value: true
+                            },
+                            fitting: {
+                                title: 'Примерка одежды',
+                                value: true
+                            },
+                            return: {
+                                title: 'Возврат товара',
+                                value: true
+                            },
+                            partial_order_redemption: {
+                                title: 'Частичный выкуп заказа',
+                                value: true
+                            }
+                        }
                     },
-                    variations: {
-                        card_payment: {
-                            title: 'Оплата картой',
-                            value: true
+                    {
+                        id: 2,
+                        type: 'Постамат',
+                        coords: [40.199782, 44.561203],
+                        name: 'Постамат PickPoint 2',
+                        city: 'Андреевка 2',
+                        address: 'Жилинская ул., с2',
+                        fee: '',
+                        workingHours: {
+                            start: '10:00',
+                            end: '19:00',
                         },
-                        fitting: {
-                            title: 'Примерка одежды',
-                            value: true
+                        variations: {
+                            card_payment: {
+                                title: 'Оплата картой',
+                                value: false
+                            },
+                            fitting: {
+                                title: 'Примерка одежды',
+                                value: true
+                            },
+                            return: {
+                                title: 'Возврат товара',
+                                value: false
+                            },
+                            partial_order_redemption: {
+                                title: 'Частичный выкуп заказа',
+                                value: true
+                            }
+                        }
+                    },
+                    {
+                        id: 3,
+                        type: 'Постамат',
+                        coords: [40.0957276821544, 44.410378054690206],
+                        name: 'Постамат PickPoint 3',
+                        city: 'Андреевка 3',
+                        address: 'Жилинская ул., с3',
+                        fee: '',
+                        workingHours: {
+                            start: '10:00',
+                            end: '19:00',
                         },
-                        return: {
-                            title: 'Возврат товара',
-                            value: true
+                        variations: {
+                            card_payment: {
+                                title: 'Оплата картой',
+                                value: true
+                            },
+                            fitting: {
+                                title: 'Примерка одежды',
+                                value: true
+                            },
+                            return: {
+                                title: 'Возврат товара',
+                                value: true
+                            },
+                            partial_order_redemption: {
+                                title: 'Частичный выкуп заказа',
+                                value: false
+                            }
+                        }
+                    },
+                    {
+                        id: 4,
+                        type: 'Постамат',
+                        coords: [40.15618088966811, 44.581365589216794],
+                        name: 'Gagulik',
+                        city: 'Yerevan',
+                        address: 'Qanaqer',
+                        fee: '',
+                        workingHours: {
+                            start: '9:00',
+                            end: '18:00',
                         },
-                        partial_order_redemption: {
-                            title: 'Частичный выкуп заказа',
-                            value: true
+                        variations: {
+                            card_payment: {
+                                title: 'Оплата картой',
+                                value: true
+                            },
+                            fitting: {
+                                title: 'Примерка одежды',
+                                value: true
+                            },
+                            return: {
+                                title: 'Возврат товара',
+                                value: true
+                            },
+                            partial_order_redemption: {
+                                title: 'Частичный выкуп заказа',
+                                value: true
+                            }
+                        }
+                    },
+                    {
+                        id: 5,
+                        type: 'Постамат',
+                        coords: [40.15618088966811, 44.581365589216794],
+                        name: 'Saqulik',
+                        city: 'Yerevan',
+                        address: 'komitas 18',
+                        fee: '',
+                        workingHours: {
+                            start: '9:00',
+                            end: '18:00',
+                        },
+                        variations: {
+                            card_payment: {
+                                title: 'Оплата картой',
+                                value: true
+                            },
+                            fitting: {
+                                title: 'Примерка одежды',
+                                value: true
+                            },
+                            return: {
+                                title: 'Возврат товара',
+                                value: true
+                            },
+                            partial_order_redemption: {
+                                title: 'Частичный выкуп заказа',
+                                value: true
+                            }
+                        }
+                    }, {
+                        id: 6,
+                        type: 'Постамат',
+                        coords: [40.812778, 44.488333],
+                        name: 'Lori',
+                        city: 'Vanadzor',
+                        address: 'asd 18',
+                        fee: '',
+                        workingHours: {
+                            start: '9:00',
+                            end: '18:00',
+                        },
+                        variations: {
+                            card_payment: {
+                                title: 'Оплата картой',
+                                value: true
+                            },
+                            fitting: {
+                                title: 'Примерка одежды',
+                                value: true
+                            },
+                            return: {
+                                title: 'Возврат товара',
+                                value: false
+                            },
+                            partial_order_redemption: {
+                                title: 'Частичный выкуп заказа',
+                                value: true
+                            }
                         }
                     }
-                },
-                {
-                    id: 2,
-                    type: 'Постамат',
-                    coords: [40.199782,44.561203],
-                    name: 'Постамат PickPoint 2',
-                    city: 'Андреевка 2',
-                    address: 'Жилинская ул., с2',
-                    fee: '',
-                    workingHours: {
-                        start: '10:00',
-                        end: '19:00',
-                    },
-                    variations: {
-                        card_payment: {
-                            title: 'Оплата картой',
-                            value: false
-                        },
-                        fitting: {
-                            title: 'Примерка одежды',
-                            value: true
-                        },
-                        return: {
-                            title: 'Возврат товара',
-                            value: false
-                        },
-                        partial_order_redemption: {
-                            title: 'Частичный выкуп заказа',
-                            value: true
-                        }
-                    }
-                },
-                {
-                    id: 3,
-                    type: 'Постамат',
-                    coords: [40.0957276821544,44.410378054690206],
-                    name: 'Постамат PickPoint 3',
-                    city: 'Андреевка 3',
-                    address: 'Жилинская ул., с3',
-                    fee: '',
-                    workingHours: {
-                        start: '10:00',
-                        end: '19:00',
-                    },
-                    variations: {
-                        card_payment: {
-                            title: 'Оплата картой',
-                            value: true
-                        },
-                        fitting: {
-                            title: 'Примерка одежды',
-                            value: true
-                        },
-                        return: {
-                            title: 'Возврат товара',
-                            value: true
-                        },
-                        partial_order_redemption: {
-                            title: 'Частичный выкуп заказа',
-                            value: false
-                        }
-                    }
-                },
-                {
-                    id: 4,
-                    type: 'Постамат',
-                    coords: [40.15618088966811,44.581365589216794],
-                    name: 'Gagulik',
-                    city: 'Yerevan',
-                    address: 'Qanaqer',
-                    fee: '',
-                    workingHours: {
-                        start: '9:00',
-                        end: '18:00',
-                    },
-                    variations: {
-                        card_payment: {
-                            title: 'Оплата картой',
-                            value: true
-                        },
-                        fitting: {
-                            title: 'Примерка одежды',
-                            value: true
-                        },
-                        return: {
-                            title: 'Возврат товара',
-                            value: true
-                        },
-                        partial_order_redemption: {
-                            title: 'Частичный выкуп заказа',
-                            value: true
-                        }
-                    }
-                },
-                {
-                    id: 5,
-                    type: 'Постамат',
-                    coords: [40.15618088966811,44.581365589216794],
-                    name: 'Saqulik',
-                    city: 'Yerevan',
-                    address: 'komitas 18',
-                    fee: '',
-                    workingHours: {
-                        start: '9:00',
-                        end: '18:00',
-                    },
-                    variations: {
-                        card_payment: {
-                            title: 'Оплата картой',
-                            value: true
-                        },
-                        fitting: {
-                            title: 'Примерка одежды',
-                            value: true
-                        },
-                        return: {
-                            title: 'Возврат товара',
-                            value: true
-                        },
-                        partial_order_redemption: {
-                            title: 'Частичный выкуп заказа',
-                            value: true
-                        }
-                    }
-                },
-            ]
+                ]
+            }
         },
         methods: {
             selectSingleMarket(id = null) {
@@ -386,14 +422,14 @@
             fullTitle(item) {
                 return `${item.name}, ${item.city}, ${item.address}`;
             },
-            showDate () {
+            showDate() {
                 const date = new Date();
                 return date.getDate() + ' ' + months[date.getMonth()]
             },
-            showDateAndWeekDay (short = false) {
+            showDateAndWeekDay(short = false) {
                 const date = new Date();
                 return date.getDate() + ' ' + months[date.getMonth()] + ', ' + week[date.getDay()][short ? 'short' : 'long']
-            }
+            },
         },
         computed: {
             filteredItems() {
