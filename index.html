@@ -91,7 +91,7 @@
                             {{fullTitle(item)}}
                         </div>
                         <div class="stock-date">
-                            Все товары 15 ноября
+                            Все товары {{showDate()}}
                         </div>
                     </div>
                     <svg width="12" height="18" viewBox="0 0 12 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -119,13 +119,13 @@
                     <div class="modal-body">
                         <div class="section-about">
                             <div class="about-price">
-                                <span>15 ноября, Пн</span>
+                                <span>{{showDateAndWeekDay(true)}}</span>
                                 <span>Бесплатно</span>
                                 <span class="text-pink">Все товары</span>
                             </div>
                         </div>
                         <div class="section-order">
-                            <p><span class="text-pink">Все товары</span>, 15 ноября, понедельник с 9:00 до 18:00</p>
+                            <p><span class="text-pink">Все товары</span>, {{showDateAndWeekDay()}} с {{selected.workingHours.start}} до {{selected.workingHours.end}}</p>
                             <button class="btn-order">Забрать здесь</button>
                         </div>
                         <div class="divider"></div>
@@ -143,9 +143,10 @@
                             <div class="stock-location">
                                 {{fullTitle(selected)}}
                             </div>
-                            <div class="stock-date">
-                                Все товары 15 ноября
+                            <div class="stock-working-days">
+                                Ежедневно с {{selected.workingHours.start}} до {{selected.workingHours.end}}
                             </div>
+                            <a class="stock-working-days text-green" :href="'https://yandex.ru/maps/?pt='+selected.coords.toString()+'&z=10&l=map'" target="_blank">Открыть на Яндекс Картах</a>
                         </div>
                         <svg width="12" height="18" viewBox="0 0 12 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M2.79617 1.99997L9.24734 8.45113C9.63786 8.84165 9.63786 9.47482 9.24734 9.86534L3.15827 15.9544"
@@ -180,6 +181,31 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 <script src=" https://unpkg.com/vue-yandex-maps"></script>
 <script>
+
+   const months = [
+       'январь',
+       'февраль',
+       'март',
+       'апрель',
+       'май',
+       'июнь',
+       'июль',
+       'август',
+       'сентябрь',
+       'октябрь',
+       'ноябрь',
+       'декабрь',
+   ];
+   const week = [
+       {long:'понедельник',short:'пн'},
+       {long:'вторник',short:'вт'},
+       {long:'реда',short:'ср'},
+       {long:'четверг',short:'чт'},
+       {long:'пятница',short:'пт'},
+       {long:'суббота',short:'сб'},
+       {long:'воскресенье',short:'вс'},
+   ];
+
     let app = new Vue({
         el: "#app",
         data: {
@@ -191,7 +217,7 @@
                 {
                     id: 1,
                     type: 'Постамат',
-                    coords: [40.15618088966811, 44.581365589216794],
+                    coords: [40.15618088966811,44.581365589216794],
                     name: 'Постамат PickPoint 1',
                     city: 'Андреевка',
                     address: 'Жилинская ул., с1',
@@ -222,7 +248,7 @@
                 {
                     id: 2,
                     type: 'Постамат',
-                    coords: [40.199782, 44.561203],
+                    coords: [40.199782,44.561203],
                     name: 'Постамат PickPoint 2',
                     city: 'Андреевка 2',
                     address: 'Жилинская ул., с2',
@@ -253,7 +279,7 @@
                 {
                     id: 3,
                     type: 'Постамат',
-                    coords: [40.0957276821544, 44.410378054690206],
+                    coords: [40.0957276821544,44.410378054690206],
                     name: 'Постамат PickPoint 3',
                     city: 'Андреевка 3',
                     address: 'Жилинская ул., с3',
@@ -284,7 +310,7 @@
                 {
                     id: 4,
                     type: 'Постамат',
-                    coords: [40.15618088966811, 44.581365589216794],
+                    coords: [40.15618088966811,44.581365589216794],
                     name: 'Gagulik',
                     city: 'Yerevan',
                     address: 'Qanaqer',
@@ -315,7 +341,7 @@
                 {
                     id: 5,
                     type: 'Постамат',
-                    coords: [40.15618088966811, 44.581365589216794],
+                    coords: [40.15618088966811,44.581365589216794],
                     name: 'Saqulik',
                     city: 'Yerevan',
                     address: 'komitas 18',
@@ -360,6 +386,14 @@
             fullTitle(item) {
                 return `${item.name}, ${item.city}, ${item.address}`;
             },
+            showDate () {
+                const date = new Date();
+                return date.getDate() + ' ' + months[date.getMonth()]
+            },
+            showDateAndWeekDay (short = false) {
+                const date = new Date();
+                return date.getDate() + ' ' + months[date.getMonth()] + ', ' + week[date.getDay()][short ? 'short' : 'long']
+            }
         },
         computed: {
             filteredItems() {
@@ -372,7 +406,7 @@
                 }
                 return this.stocks;
             },
-        },
+        }
     });
 </script>
 </body>

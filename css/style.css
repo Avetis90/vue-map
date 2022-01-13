@@ -236,6 +236,10 @@
     color: #DF5A9B !important;
 }
 
+.text-green {
+    color: #17999F !important;
+}
+
 .divider {
     height: 8px;
     width: 100%;
@@ -308,4 +312,13 @@
 }
 .btn-open{
     max-width: max-content;
+}
+.stock-working-days{
+    font-weight: normal;
+    font-size: 17px;
+    line-height: 19px;
+    color: #000000;
+    margin-top: 5px;
+    text-decoration: none;
+    display: block;
 }
