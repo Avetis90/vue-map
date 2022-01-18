@@ -16,7 +16,9 @@
     <div id="map-modal" v-else>
         <section class="section-map">
             <yandex-map :coords="selected ? selected.coords : coords" :zoom="10"
-                        :center="selected ? selected.coords : coords">
+                        :center="selected ? selected.coords : coords"
+                        @map-was-initialized="initHandler"
+            >
                 <ymap-marker
                         v-for="placemark in filteredItems"
                         :key="placemark.id"
@@ -24,6 +26,8 @@
                         marker-id="placemark.id"
                         marker-type="placemark"
                         :balloon="{ body: placemark.name }"
+                        :icon="{color: selected && selected.id === placemark.id ? 'red' :'blue'}"
+                        class="asdasd"
                 />
             </yandex-map>
         </section>
@@ -222,8 +226,8 @@
                     {
                         id: 1,
                         type: 'Постамат',
-                        coords: [40.15618088966811, 44.581365589216794],
-                        name: 'Постамат PickPoint 1',
+                        coords: [40.065019026828594,44.45419616264451],
+                        name: 'Постамат Masis',
                         city: 'Андреевка',
                         address: 'Жилинская ул., с1',
                         fee: '',
@@ -253,10 +257,10 @@
                     {
                         id: 2,
                         type: 'Постамат',
-                        coords: [40.199782, 44.561203],
-                        name: 'Постамат PickPoint 2',
-                        city: 'Андреевка 2',
-                        address: 'Жилинская ул., с2',
+                        coords: [40.301458025072435,44.372874390003524],
+                        name: 'Постамат Ashtarak',
+                        city: 'Ashtarak',
+                        address: 'Teryan 18',
                         fee: '',
                         workingHours: {
                             start: '10:00',
@@ -284,10 +288,10 @@
                     {
                         id: 3,
                         type: 'Постамат',
-                        coords: [40.0957276821544, 44.410378054690206],
-                        name: 'Постамат PickPoint 3',
+                        coords: [40.27346811415115,44.625234213489826],
+                        name: 'Постамат Abovyan',
                         city: 'Андреевка 3',
-                        address: 'Жилинская ул., с3',
+                        address: '18 ул., д. 3',
                         fee: '',
                         workingHours: {
                             start: '10:00',
@@ -315,10 +319,10 @@
                     {
                         id: 4,
                         type: 'Постамат',
-                        coords: [40.15618088966811, 44.581365589216794],
-                        name: 'Gagulik',
+                        coords: [40.18335405710836,44.512695373286434],
+                        name: 'Постамат Yerevan',
                         city: 'Yerevan',
-                        address: 'Qanaqer',
+                        address: 'kentron',
                         fee: '',
                         workingHours: {
                             start: '9:00',
@@ -346,7 +350,7 @@
                     {
                         id: 5,
                         type: 'Постамат',
-                        coords: [40.15618088966811, 44.581365589216794],
+                        coords: [40.1561813, 44.58136558948],
                         name: 'Saqulik',
                         city: 'Yerevan',
                         address: 'komitas 18',
@@ -373,7 +377,8 @@
                                 value: true
                             }
                         }
-                    }, {
+                    },
+                    {
                         id: 6,
                         type: 'Постамат',
                         coords: [40.812778, 44.488333],
@@ -404,7 +409,8 @@
                             }
                         }
                     }
-                ]
+                ],
+                map:null
             }
         },
         methods: {
@@ -430,6 +436,10 @@
                 const date = new Date();
                 return date.getDate() + ' ' + months[date.getMonth()] + ', ' + week[date.getDay()][short ? 'short' : 'long']
             },
+            initHandler(e) {
+                console.log(e)
+                this.map = e;
+            }
         },
         computed: {
             filteredItems() {
@@ -438,7 +448,7 @@
                         el.name.toLowerCase().includes(this.search.toLowerCase()) ||
                         el.city.toLowerCase().includes(this.search.toLowerCase()) ||
                         el.address.toLowerCase().includes(this.search.toLowerCase())
-                    );
+                    )
                 }
                 return this.stocks;
             },
