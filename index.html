@@ -17,11 +17,13 @@
         <section class="section-map">
             <yandex-map :coords="selected ? selected.coords : coords" :zoom="10"
                         :center="selected ? selected.coords : coords"
-                        @map-was-initialized="initHandler"
+                        :use-object-manager="false"
+                        :show-all-markers="true"
+                        :options="{ minZoom: '10', maxZoom: '10' }"
             >
                 <ymap-marker
                         v-for="placemark in filteredItems"
-                        :key="placemark.id"
+                        :key="getRandomKey()"
                         :coords="placemark.coords"
                         marker-id="placemark.id"
                         marker-type="placemark"
@@ -414,6 +416,9 @@
             }
         },
         methods: {
+            getRandomKey() {
+                return Math.random().toString().replace("0.", "");
+            },
             selectSingleMarket(id = null) {
                 this.selected = id
                     ? this.stocks.find((el) => el.id === id)
@@ -435,10 +440,6 @@
             showDateAndWeekDay(short = false) {
                 const date = new Date();
                 return date.getDate() + ' ' + months[date.getMonth()] + ', ' + week[date.getDay()][short ? 'short' : 'long']
-            },
-            initHandler(e) {
-                console.log(e)
-                this.map = e;
             }
         },
         computed: {
